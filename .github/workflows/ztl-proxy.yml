@@ -1,0 +1,80 @@
+name: Update Italy ZTL GeoJSON
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 4 * * 1'   # Weekly Monday 04:00 UTC
+
+jobs:
+  update-ztl:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
+
+    - name: Create data directory
+      run: mkdir -p data
+
+    - name: Download Milan Area B
+      run: |
+        curl -L "https://geoservices.comune.milano.it/arcgis/rest/services/AREAB/FeatureServer/0/query?where=1=1&outFields=*&f=geojson" \
+        -o data/milan_area_b.geojson
+
+    - name: Download Milan Area C
+      run: |
+        curl -L "https://geoservices.comune.milano.it/arcgis/rest/services/AREAC/FeatureServer/0/query?where=1=1&outFields=*&f=geojson" \
+        -o data/milan_area_c.geojson
+
+    - name: Download Milan ZTL Cameras
+      run: |
+        curl -L "https://geoservices.comune.milano.it/arcgis/rest/services/VARCHI_ZTL/FeatureServer/0/query?where=1=1&outFields=*&f=geojson" \
+        -o data/milan_cameras.geojson
+
+    - name: Download Florence ZTL
+      run: |
+        curl -L "https://servizi.comune.fi.it/arcgis/rest/services/ZTL/FeatureServer/0/query?where=1=1&outFields=*&f=geojson" \
+        -o data/florence_ztl.geojson
+
+    - name: Download Florence Cameras
+      run: |
+        curl -L "https://servizi.comune.fi.it/arcgis/rest/services/VARCHI_ZTL/FeatureServer/0/query?where=1=1&outFields=*&f=geojson" \
+        -o data/florence_cameras.geojson
+
+    - name: Download Rome ZTL
+      run: |
+        curl -L "https://dati.comune.roma.it/arcgis/rest/services/ZTL/FeatureServer/0/query?where=1=1&outFields=*&f=geojson" \
+        -o data/rome_ztl.geojson
+
+    - name: Download Rome Cameras
+      run: |
+        curl -L "https://dati.comune.roma.it/arcgis/rest/services/VARCHI_ZTL/FeatureServer/0/query?where=1=1&outFields=*&f=geojson" \
+        -o data/rome_cameras.geojson
+
+    - name: Download Pisa ZTL
+      run: |
+        curl -L "https://geoportale.comune.pisa.it/arcgis/rest/services/ZTL/FeatureServer/0/query?where=1=1&outFields=*&f=geojson" \
+        -o data/pisa_ztl.geojson
+
+    - name: Download Pisa Cameras
+      run: |
+        curl -L "https://geoportale.comune.pisa.it/arcgis/rest/services/VARCHI_ZTL/FeatureServer/0/query?where=1=1&outFields=*&f=geojson" \
+        -o data/pisa_cameras.geojson
+
+    - name: Download Venice Mestre ZTL
+      run: |
+        curl -L "https://portale.comune.venezia.it/arcgis/rest/services/ZTL_MESTRE/FeatureServer/0/query?where=1=1&outFields=*&f=geojson" \
+        -o data/venice_mestre_ztl.geojson
+
+    - name: Download Venice Mestre Cameras
+      run: |
+        curl -L "https://portale.comune.venezia.it/arcgis/rest/services/VARCHI_MESTRE/FeatureServer/0/query?where=1=1&outFields=*&f=geojson" \
+        -o data/venice_mestre_cameras.geojson
+
+    - name: Commit updated GeoJSON
+      run: |
+        git config user.name "github-actions"
+        git config user.email "github-actions@github.com"
+        git add data/*.geojson
+        git commit -m "Update official ZTL GeoJSON" || echo "No changes"
+        git push
