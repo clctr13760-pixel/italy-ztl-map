@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Italy ZTL Map – Official Boundaries & Cameras</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+<style>
+html, body { margin:0; padding:0; height:100%; }
+#map { width:100%; height:100%; }
+.control-box {
+  background:white;
+  padding:10px;
+  box-shadow:0 0 6px rgba(0,0,0,0.3);
+}
+.zoom-btn {
+  margin:2px 0;
+  width:100%;
+}
+</style>
+</head>
+
+<body>
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+const map = L.map('map').setView([43.0, 12.5], 6);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19,
+  attribution: '&copy; OpenStreetMap contributors'
+}).addTo(map);
+
+const areaBStyle = { color:'#4575b4', weight:2, fillOpacity:0.12 };
+const areaCStyle = { color:'#d73027', weight:2, fillOpacity:0.18 };
+const ztlStyle   = { color:'#1a9850', weight:2, fillOpacity:0.15 };
+
+const cameraIcon = L.icon({
+  iconUrl: 'https://cdn-icons-png.flaticon.com/512/814/814513.png',
+  iconSize: [20,20],
+  iconAnchor: [10,10]
+});
+
+/* ---------- MILAN ---------- */
+const milanAreaB = L.esri.featureLayer({
+  url: 'https://geoservices.comune.milano.it/arcgis/rest/services/AREAB/FeatureServer/0',
+  style: areaBStyle
+});
+
+const milanAreaC = L.esri.featureLayer({
+  url: 'https://geoservices.comune.milano.it/arcgis/rest/services/AREAC/FeatureServer/0',
+  style: areaCStyle
+});
+
+const milanCameras = L.esri.featureLayer({
+  url: 'https://geoservices.comune.milano.it/arcgis/rest/services/VARCHI_ZTL/FeatureServer/0',
+  pointToLayer: (geojson, latlng) => L.marker(latlng, {icon: cameraIcon}),
+  onEachFeature: (f, l) => l.bindPopup("Milan ZTL Camera")
+});
+
+/* ---------- FLORENCE ---------- */
+const florenceZTL = L.esri.featureLayer({
+  url: 'https://servizi.comune.fi.it/geoserver/ztl/FeatureServer/0',
+  style: ztlStyle
+});
+
+const florenceCameras = L.esri.featureLayer({
+  url: 'https://servizi.comune.fi.it/geoserver/varchi_ztl/FeatureServer/0',
+  pointToLayer: (g,l) => L.marker(l,{icon:cameraIcon}),
+  onEachFeature: (f,l)=>l.bindPopup("Florence ZTL Gate")
+});
+
+/* ---------- ROME ---------- */
+const romeZTL = L.esri.featureLayer({
+  url: 'https://dati.comune.roma.it/arcgis/rest/services/ZTL/FeatureServer/0',
+  style: ztlStyle
+});
+
+const romeCameras = L.esri.featureLayer({
+  url: 'https://dati.comune.roma.it/arcgis/rest/services/VARCHI_ZTL/FeatureServer/0',
+  pointToLayer: (g,l)=>L.marker(l,{icon:cameraIcon}),
+  onEachFeature:(f,l)=>l.bindPopup("Rome ZTL Camera")
+});
+
+/* ---------- PISA ---------- */
+const pisaZTL = L.esri.featureLayer({
+  url: 'https://geoportale.comune.pisa.it/arcgis/rest/services/ZTL/FeatureServer/0',
+  style: ztlStyle
+});
+
+const pisaCameras = L.esri.featureLayer({
+  url: 'https://geoportale.comune.pisa.it/arcgis/rest/services/VARCHI_ZTL/FeatureServer/0',
+  pointToLayer:(g,l)=>L.marker(l,{icon:cameraIcon}),
+  onEachFeature:(f,l)=>l.bindPopup("Pisa ZTL Camera")
+});
+
+/* ---------- VENICE (MESTRE) ---------- */
+const veniceZTL = L.esri.featureLayer({
+  url: 'https://portale.comune.venezia.it/arcgis/rest/services/ZTL_MESTRE/FeatureServer/0',
+  style: ztlStyle
+});
+
+const veniceCameras = L.esri.featureLayer({
+  url: 'https://portale.comune.venezia.it/arcgis/rest/services/VARCHI_MESTRE/FeatureServer/0',
+  pointToLayer:(g,l)=>L.marker(l,{icon:cameraIcon}),
+  onEachFeature:(f,l)=>l.bindPopup("Venice ZTL Gate")
+});
+
+/* ---------- LAYER CONTROL ---------- */
+const overlays = {
+  "Milan – Area B": milanAreaB,
+  "Milan – Area C": milanAreaC,
+  "Milan – Cameras": milanCameras,
+  "Florence – ZTL": florenceZTL,
+  "Florence – Cameras": florenceCameras,
+  "Rome – ZTL": romeZTL,
+  "Rome – Cameras": romeCameras,
+  "Pisa – ZTL": pisaZTL,
+  "Pisa – Cameras": pisaCameras,
+  "Venice (Mestre) – ZTL": veniceZTL,
+  "Venice (Mestre) – Cameras": veniceCameras
+};
+
+L.control.layers(null, overlays, {collapsed:false}).addTo(map);
+</script>
+
+<!-- ESRI Leaflet -->
+<script src="https://unpkg.com/esri-leaflet@3.0.11/dist/esri-leaflet.js"></script>
+
+</body>
+</html>
