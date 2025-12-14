@@ -10,22 +10,16 @@
 <style>
 html, body { margin:0; padding:0; height:100%; }
 #map { width:100%; height:100%; }
-.control-box {
-  background:white;
-  padding:10px;
-  box-shadow:0 0 6px rgba(0,0,0,0.3);
-}
-.zoom-btn {
-  margin:2px 0;
-  width:100%;
-}
 </style>
 </head>
 
 <body>
 <div id="map"></div>
 
+<!-- Leaflet -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- ESRI Leaflet (MUST come before usage) -->
+<script src="https://unpkg.com/esri-leaflet@3.0.11/dist/esri-leaflet.js"></script>
 
 <script>
 const map = L.map('map').setView([43.0, 12.5], 6);
@@ -41,77 +35,77 @@ const ztlStyle   = { color:'#1a9850', weight:2, fillOpacity:0.15 };
 
 const cameraIcon = L.icon({
   iconUrl: 'https://cdn-icons-png.flaticon.com/512/814/814513.png',
-  iconSize: [20,20],
-  iconAnchor: [10,10]
+  iconSize: [18,18],
+  iconAnchor: [9,9]
 });
 
-/* ---------- MILAN ---------- */
+/* ---------------- MILAN ---------------- */
 const milanAreaB = L.esri.featureLayer({
   url: 'https://geoservices.comune.milano.it/arcgis/rest/services/AREAB/FeatureServer/0',
   style: areaBStyle
-});
+}).addTo(map);
 
 const milanAreaC = L.esri.featureLayer({
   url: 'https://geoservices.comune.milano.it/arcgis/rest/services/AREAC/FeatureServer/0',
   style: areaCStyle
-});
+}).addTo(map);
 
 const milanCameras = L.esri.featureLayer({
   url: 'https://geoservices.comune.milano.it/arcgis/rest/services/VARCHI_ZTL/FeatureServer/0',
-  pointToLayer: (geojson, latlng) => L.marker(latlng, {icon: cameraIcon}),
-  onEachFeature: (f, l) => l.bindPopup("Milan ZTL Camera")
-});
+  pointToLayer: (g,l)=>L.marker(l,{icon:cameraIcon}),
+  onEachFeature: (f,l)=>l.bindPopup("Milan ZTL Camera")
+}).addTo(map);
 
-/* ---------- FLORENCE ---------- */
+/* ---------------- FLORENCE ---------------- */
 const florenceZTL = L.esri.featureLayer({
-  url: 'https://servizi.comune.fi.it/geoserver/ztl/FeatureServer/0',
+  url: 'https://servizi.comune.fi.it/arcgis/rest/services/ZTL/FeatureServer/0',
   style: ztlStyle
-});
+}).addTo(map);
 
 const florenceCameras = L.esri.featureLayer({
-  url: 'https://servizi.comune.fi.it/geoserver/varchi_ztl/FeatureServer/0',
-  pointToLayer: (g,l) => L.marker(l,{icon:cameraIcon}),
-  onEachFeature: (f,l)=>l.bindPopup("Florence ZTL Gate")
-});
+  url: 'https://servizi.comune.fi.it/arcgis/rest/services/VARCHI_ZTL/FeatureServer/0',
+  pointToLayer:(g,l)=>L.marker(l,{icon:cameraIcon}),
+  onEachFeature:(f,l)=>l.bindPopup("Florence ZTL Gate")
+}).addTo(map);
 
-/* ---------- ROME ---------- */
+/* ---------------- ROME ---------------- */
 const romeZTL = L.esri.featureLayer({
   url: 'https://dati.comune.roma.it/arcgis/rest/services/ZTL/FeatureServer/0',
   style: ztlStyle
-});
+}).addTo(map);
 
 const romeCameras = L.esri.featureLayer({
   url: 'https://dati.comune.roma.it/arcgis/rest/services/VARCHI_ZTL/FeatureServer/0',
-  pointToLayer: (g,l)=>L.marker(l,{icon:cameraIcon}),
+  pointToLayer:(g,l)=>L.marker(l,{icon:cameraIcon}),
   onEachFeature:(f,l)=>l.bindPopup("Rome ZTL Camera")
-});
+}).addTo(map);
 
-/* ---------- PISA ---------- */
+/* ---------------- PISA ---------------- */
 const pisaZTL = L.esri.featureLayer({
   url: 'https://geoportale.comune.pisa.it/arcgis/rest/services/ZTL/FeatureServer/0',
   style: ztlStyle
-});
+}).addTo(map);
 
 const pisaCameras = L.esri.featureLayer({
   url: 'https://geoportale.comune.pisa.it/arcgis/rest/services/VARCHI_ZTL/FeatureServer/0',
   pointToLayer:(g,l)=>L.marker(l,{icon:cameraIcon}),
   onEachFeature:(f,l)=>l.bindPopup("Pisa ZTL Camera")
-});
+}).addTo(map);
 
-/* ---------- VENICE (MESTRE) ---------- */
+/* ---------------- VENICE (MESTRE) ---------------- */
 const veniceZTL = L.esri.featureLayer({
   url: 'https://portale.comune.venezia.it/arcgis/rest/services/ZTL_MESTRE/FeatureServer/0',
   style: ztlStyle
-});
+}).addTo(map);
 
 const veniceCameras = L.esri.featureLayer({
   url: 'https://portale.comune.venezia.it/arcgis/rest/services/VARCHI_MESTRE/FeatureServer/0',
   pointToLayer:(g,l)=>L.marker(l,{icon:cameraIcon}),
   onEachFeature:(f,l)=>l.bindPopup("Venice ZTL Gate")
-});
+}).addTo(map);
 
-/* ---------- LAYER CONTROL ---------- */
-const overlays = {
+/* ---------------- CONTROLS ---------------- */
+L.control.layers(null, {
   "Milan – Area B": milanAreaB,
   "Milan – Area C": milanAreaC,
   "Milan – Cameras": milanCameras,
@@ -123,13 +117,7 @@ const overlays = {
   "Pisa – Cameras": pisaCameras,
   "Venice (Mestre) – ZTL": veniceZTL,
   "Venice (Mestre) – Cameras": veniceCameras
-};
-
-L.control.layers(null, overlays, {collapsed:false}).addTo(map);
+}, {collapsed:false}).addTo(map);
 </script>
-
-<!-- ESRI Leaflet -->
-<script src="https://unpkg.com/esri-leaflet@3.0.11/dist/esri-leaflet.js"></script>
-
 </body>
 </html>
