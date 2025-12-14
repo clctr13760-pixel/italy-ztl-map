@@ -16,9 +16,7 @@ html, body { margin:0; padding:0; height:100%; }
 <body>
 <div id="map"></div>
 
-<!-- Leaflet -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<!-- ESRI Leaflet (MUST come before usage) -->
 <script src="https://unpkg.com/esri-leaflet@3.0.11/dist/esri-leaflet.js"></script>
 
 <script>
@@ -31,7 +29,6 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 
 const areaBStyle = { color:'#4575b4', weight:2, fillOpacity:0.12 };
 const areaCStyle = { color:'#d73027', weight:2, fillOpacity:0.18 };
-const ztlStyle   = { color:'#1a9850', weight:2, fillOpacity:0.15 };
 
 const cameraIcon = L.icon({
   iconUrl: 'https://cdn-icons-png.flaticon.com/512/814/814513.png',
@@ -39,85 +36,39 @@ const cameraIcon = L.icon({
   iconAnchor: [9,9]
 });
 
-/* ---------------- MILAN ---------------- */
-const milanAreaB = L.esri.featureLayer({
-  url: 'https://geoservices.comune.milano.it/arcgis/rest/services/AREAB/FeatureServer/0',
-  style: areaBStyle
-}).addTo(map);
+/* ---------- MILAN (HTTPS-SAFE) ---------- */
+const milanAreaB = L.esri
+  .query({
+    url: 'https://geoservices.comune.milano.it/arcgis/rest/services/AREAB/FeatureServer/0'
+  })
+  .where('1=1')
+  .run((error, fc) => {
+    if (!error) L.geoJSON(fc, {style: areaBStyle}).addTo(map);
+  });
 
-const milanAreaC = L.esri.featureLayer({
-  url: 'https://geoservices.comune.milano.it/arcgis/rest/services/AREAC/FeatureServer/0',
-  style: areaCStyle
-}).addTo(map);
+const milanAreaC = L.esri
+  .query({
+    url: 'https://geoservices.comune.milano.it/arcgis/rest/services/AREAC/FeatureServer/0'
+  })
+  .where('1=1')
+  .run((error, fc) => {
+    if (!error) L.geoJSON(fc, {style: areaCStyle}).addTo(map);
+  });
 
-const milanCameras = L.esri.featureLayer({
-  url: 'https://geoservices.comune.milano.it/arcgis/rest/services/VARCHI_ZTL/FeatureServer/0',
-  pointToLayer: (g,l)=>L.marker(l,{icon:cameraIcon}),
-  onEachFeature: (f,l)=>l.bindPopup("Milan ZTL Camera")
-}).addTo(map);
+const milanCameras = L.esri
+  .query({
+    url: 'https://geoservices.comune.milano.it/arcgis/rest/services/VARCHI_ZTL/FeatureServer/0'
+  })
+  .where('1=1')
+  .run((error, fc) => {
+    if (!error) {
+      L.geoJSON(fc, {
+        pointToLayer: (f,latlng)=>L.marker(latlng,{icon:cameraIcon}),
+        onEachFeature:(f,l)=>l.bindPopup("Milan ZTL Camera")
+      }).addTo(map);
+    }
+  });
 
-/* ---------------- FLORENCE ---------------- */
-const florenceZTL = L.esri.featureLayer({
-  url: 'https://servizi.comune.fi.it/arcgis/rest/services/ZTL/FeatureServer/0',
-  style: ztlStyle
-}).addTo(map);
-
-const florenceCameras = L.esri.featureLayer({
-  url: 'https://servizi.comune.fi.it/arcgis/rest/services/VARCHI_ZTL/FeatureServer/0',
-  pointToLayer:(g,l)=>L.marker(l,{icon:cameraIcon}),
-  onEachFeature:(f,l)=>l.bindPopup("Florence ZTL Gate")
-}).addTo(map);
-
-/* ---------------- ROME ---------------- */
-const romeZTL = L.esri.featureLayer({
-  url: 'https://dati.comune.roma.it/arcgis/rest/services/ZTL/FeatureServer/0',
-  style: ztlStyle
-}).addTo(map);
-
-const romeCameras = L.esri.featureLayer({
-  url: 'https://dati.comune.roma.it/arcgis/rest/services/VARCHI_ZTL/FeatureServer/0',
-  pointToLayer:(g,l)=>L.marker(l,{icon:cameraIcon}),
-  onEachFeature:(f,l)=>l.bindPopup("Rome ZTL Camera")
-}).addTo(map);
-
-/* ---------------- PISA ---------------- */
-const pisaZTL = L.esri.featureLayer({
-  url: 'https://geoportale.comune.pisa.it/arcgis/rest/services/ZTL/FeatureServer/0',
-  style: ztlStyle
-}).addTo(map);
-
-const pisaCameras = L.esri.featureLayer({
-  url: 'https://geoportale.comune.pisa.it/arcgis/rest/services/VARCHI_ZTL/FeatureServer/0',
-  pointToLayer:(g,l)=>L.marker(l,{icon:cameraIcon}),
-  onEachFeature:(f,l)=>l.bindPopup("Pisa ZTL Camera")
-}).addTo(map);
-
-/* ---------------- VENICE (MESTRE) ---------------- */
-const veniceZTL = L.esri.featureLayer({
-  url: 'https://portale.comune.venezia.it/arcgis/rest/services/ZTL_MESTRE/FeatureServer/0',
-  style: ztlStyle
-}).addTo(map);
-
-const veniceCameras = L.esri.featureLayer({
-  url: 'https://portale.comune.venezia.it/arcgis/rest/services/VARCHI_MESTRE/FeatureServer/0',
-  pointToLayer:(g,l)=>L.marker(l,{icon:cameraIcon}),
-  onEachFeature:(f,l)=>l.bindPopup("Venice ZTL Gate")
-}).addTo(map);
-
-/* ---------------- CONTROLS ---------------- */
-L.control.layers(null, {
-  "Milan – Area B": milanAreaB,
-  "Milan – Area C": milanAreaC,
-  "Milan – Cameras": milanCameras,
-  "Florence – ZTL": florenceZTL,
-  "Florence – Cameras": florenceCameras,
-  "Rome – ZTL": romeZTL,
-  "Rome – Cameras": romeCameras,
-  "Pisa – ZTL": pisaZTL,
-  "Pisa – Cameras": pisaCameras,
-  "Venice (Mestre) – ZTL": veniceZTL,
-  "Venice (Mestre) – Cameras": veniceCameras
-}, {collapsed:false}).addTo(map);
 </script>
 </body>
 </html>
